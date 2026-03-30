@@ -1,0 +1,228 @@
+/* cute soft theme — pastels, rounded, cozy */
+
+:root {
+  --cream: #fff8fb;
+  --pink: #ffb8d9;
+  --lav: #d4c4ff;
+  --mint: #b8f2e6;
+  --text: #4a3f55;
+  --muted: #7a6b86;
+  --card: rgba(255, 255, 255, 0.72);
+  --shadow: 0 12px 40px rgba(180, 120, 200, 0.2);
+  --radius: 22px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Nunito", system-ui, sans-serif;
+  color: var(--text);
+  background: linear-gradient(165deg, #ffe8f3 0%, #e8e4ff 45%, #d5f5ff 100%);
+  line-height: 1.5;
+}
+
+.bg-stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.5) 0, transparent 3px),
+    radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.4) 0, transparent 2px),
+    radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.35) 0, transparent 2px),
+    radial-gradient(circle at 90% 70%, rgba(255, 255, 255, 0.45) 0, transparent 3px);
+  background-size: 200px 200px;
+  opacity: 0.7;
+  z-index: 0;
+}
+
+.site-header,
+.site-footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 1rem;
+}
+
+.est {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.card {
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius);
+  padding: 1.75rem 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.hero h1 {
+  margin: 0.2rem 0 0.5rem;
+  font-size: clamp(2.2rem, 6vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: #c44b9e;
+}
+
+.hero-kicker {
+  margin: 0;
+  font-weight: 700;
+  color: #9b6bb5;
+  font-size: 0.95rem;
+}
+
+.hero-sub {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.analyze-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.at {
+  display: flex;
+  align-items: center;
+  padding: 0 0.35rem 0 0.5rem;
+  font-weight: 800;
+  color: #c44b9e;
+}
+
+.analyze-row input[type="text"] {
+  flex: 1 1 180px;
+  min-width: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 999px;
+  border: 2px solid rgba(212, 196, 255, 0.8);
+  background: var(--cream);
+  font: inherit;
+  color: var(--text);
+}
+
+.analyze-row input:focus {
+  outline: none;
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px rgba(255, 184, 217, 0.45);
+}
+
+.analyze-row button,
+.secondary-btn {
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  border: none;
+  border-radius: 999px;
+  padding: 0.85rem 1.35rem;
+  background: linear-gradient(120deg, var(--pink), var(--lav));
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(200, 120, 200, 0.35);
+}
+
+.analyze-row button:hover,
+.secondary-btn:hover {
+  filter: brightness(1.05);
+}
+
+.secondary-btn {
+  margin-top: 0.75rem;
+  background: linear-gradient(120deg, var(--mint), #a8e6cf);
+  color: var(--text);
+  box-shadow: 0 6px 20px rgba(100, 180, 160, 0.25);
+}
+
+.error {
+  margin: 0.75rem 0 0;
+  color: #b83232;
+  font-weight: 600;
+}
+
+.verdict-label {
+  margin: 0;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* pink heart next to username for one special case (see app.js) */
+.foid-heart {
+  margin-left: 0.25rem;
+  font-size: 1.15em;
+  filter: saturate(1.2);
+  vertical-align: middle;
+}
+
+.verdict-title {
+  margin: 0.5rem 0 0.35rem;
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: 800;
+  color: #7c3fa3;
+}
+
+.verdict-percent {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.75rem, 4vw, 2.35rem);
+  font-weight: 800;
+  color: #c44b9e;
+}
+
+.verdict-percent-sub {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.verdict-blurb {
+  margin: 0 0 1rem;
+  color: var(--muted);
+}
+
+.site-footer p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.footer-credit {
+  margin-top: 0.5rem;
+}
+
+.footer-credit a {
+  color: #9b4d9e;
+  font-weight: 700;
+}
+
+.profile-link-wrap {
+  margin: 0.5rem 0 0;
+}
+
+.profile-link-wrap a {
+  color: #9b4d9e;
+  font-weight: 700;
+}

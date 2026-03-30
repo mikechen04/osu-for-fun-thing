@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>top or bottom? — osu edition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-stars" aria-hidden="true"></div>
+
+    <main class="wrap">
+      <section class="hero card">
+        <p class="hero-kicker">the truth you deserve</p>
+        <h1>
+          top or<br />
+          <em>bottom?</em>
+        </h1>
+        <p class="hero-sub">type an osu! username and something something something uhh idk ARF ARF ARF</p>
+
+        <form id="analyze-form" class="analyze-row">
+          <span class="at">@</span>
+          <input
+            id="username-input"
+            type="text"
+            name="username"
+            placeholder="username"
+            autocomplete="off"
+            spellcheck="false"
+            maxlength="64"
+          />
+          <button type="submit" id="go-btn">find out</button>
+        </form>
+        <p id="form-error" class="error" hidden></p>
+      </section>
+
+      <section id="result-section" class="card result-card" hidden>
+        <p class="verdict-label">
+          verdict for <span id="res-username"></span>
+          <span id="foid-heart" class="foid-heart" hidden aria-hidden="true">💗</span>
+        </p>
+        <p id="verdict-title" class="verdict-title"></p>
+        <p id="verdict-percent" class="verdict-percent" aria-label="top index percent"></p>
+        <p id="verdict-percent-sub" class="verdict-percent-sub" hidden>
+          0% = bottom · 100% = top (secret formula units)
+        </p>
+        <p id="verdict-blurb" class="verdict-blurb" hidden></p>
+
+        <p class="profile-link-wrap">
+          <a id="osu-profile-link" href="#" target="_blank" rel="noopener">open profile on osu.ppy.sh</a>
+        </p>
+        <button type="button" id="copy-btn" class="secondary-btn">copy verdict</button>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p class="est">est. 2026 ✿ not affiliated with osu! / ppy</p>
+      <p class="footer-credit">
+        made by
+        <a href="https://osu.ppy.sh/9632648" target="_blank" rel="noopener">aheriez</a>
+        ·
+        <a href="https://twitter.com/aherieznya" target="_blank" rel="noopener">@aherieznya</a>
+      </p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
