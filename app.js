@@ -7,9 +7,10 @@ const MANUAL_OVERRIDES = {
   acer: { label: "bottom", percent: 100 },
   // must match osu username normalized (space not underscore)
   "chinese foid": { label: "100000% BOTTOM", percent: 100 },
-  "Jeon": { label: "bottom", percent: 67 },
-  "Ethan Jeon": { label: "bottom", percent: 67 },
-  "Sigge": { label: "top", percent: 67 },
+  // keys must match normName() from api (lowercase osu username)
+  jeon: { label: "bottom", percent: 67 },
+  "ethan jeon": { label: "bottom", percent: 67 },
+  sigge: { label: "top", percent: 67 },
 };
 
 // easter egg: heart only — full verdict text is in the title (no second % line)
@@ -50,8 +51,10 @@ function normalizeOverrideEntry(entry, formulaScore) {
 }
 
 function pickRawOverride(key) {
-  if (Object.prototype.hasOwnProperty.call(MANUAL_OVERRIDES, key)) {
-    return MANUAL_OVERRIDES[key];
+  // always compare lowercase — api gives canonical username, object keys are case-sensitive
+  const k = normName(key);
+  if (Object.prototype.hasOwnProperty.call(MANUAL_OVERRIDES, k)) {
+    return MANUAL_OVERRIDES[k];
   }
   return null;
 }
