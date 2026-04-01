@@ -1,4 +1,3 @@
-// small backend so we dont leak api keys in the browser
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -7,7 +6,6 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// must allow browser origins (github pages / your domain). cloud run also needs "allow unauthenticated invocations" or the 403 has no cors headers and fetch shows NetworkError
 app.use(
   cors({
     origin: "*",
@@ -16,7 +14,6 @@ app.use(
   })
 );
 
-// cache oauth token for v2
 let tokenCache = { access_token: null, expires_at: 0 };
 
 async function getV2Token() {
@@ -33,7 +30,6 @@ async function getV2Token() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      // osu expects a number here when you register the oauth app
       client_id: Number(id) || id,
       client_secret: secret,
       grant_type: "client_credentials",
@@ -49,12 +45,10 @@ async function getV2Token() {
 
   const data = await res.json();
   tokenCache.access_token = data.access_token;
-  // expires_in is seconds
   tokenCache.expires_at = now + (data.expires_in || 3600) * 1000;
   return tokenCache.access_token;
 }
 
-// legacy api gives enabled_mods as a number — turn into short letters like HDHR so the frontend can read it
 function legacyModsToString(bits) {
   let n = Number(bits) || 0;
   if (n === 0) return "";
@@ -73,7 +67,6 @@ function legacyModsToString(bits) {
   return parts.join("");
 }
 
-// v2 scores can have mods as [{ acronym: "HD" }, ...] or strings
 function stringifyV2Mods(modsArr) {
   if (!Array.isArray(modsArr)) return "";
   const parts = [];
@@ -85,7 +78,6 @@ function stringifyV2Mods(modsArr) {
   return parts.join("");
 }
 
-// strip html from profile page text (api returns html sometimes)
 function stripHtml(html) {
   if (!html || typeof html !== "string") return "";
   return html
@@ -94,7 +86,6 @@ function stripHtml(html) {
     .trim();
 }
 
-// legacy v1 api (only stats + top plays, no bio)
 async function fetchLegacyUser(username, apiKey) {
   const u = encodeURIComponent(username);
   const base = `https://osu.ppy.sh/api`;
@@ -148,7 +139,6 @@ async function fetchV2User(username) {
   if (!token) return null;
 
   const safe = encodeURIComponent(username);
-  // @username lookup — include=page is needed or bio comes back empty
   const userUrl = `https://osu.ppy.sh/api/v2/users/@${safe}/osu?include=page,statistics`;
 
   const userRes = await fetch(userUrl, {
@@ -162,14 +152,12 @@ async function fetchV2User(username) {
   }
 
   let u = await userRes.json();
-  // json:api shape fallback (just in case)
   if (u.data && u.data.attributes) {
     u = { id: u.data.id, ...u.data.attributes };
   }
 
   const id = u.id;
 
-  // stats for osu mode
   const stats = u.statistics || {};
   const pageRaw =
     (u.page && u.page.raw) ||
@@ -229,14 +217,12 @@ app.get("/api/analyze", async (req, res) => {
   }
 
   try {
-    // prefer v2 if oauth app is configured (gets bio + nicer top play info)
     let payload = null;
     if (process.env.OSU_CLIENT_ID && process.env.OSU_CLIENT_SECRET) {
       try {
         payload = await fetchV2User(username);
       } catch (e) {
         console.error("v2 fetch error", e.message);
-        // fall through to legacy if we have key
       }
     }
 
@@ -258,7 +244,6 @@ app.get("/api/analyze", async (req, res) => {
   }
 });
 
-// frontend files live at repo root so github pages can serve the same paths (not under /public)
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });

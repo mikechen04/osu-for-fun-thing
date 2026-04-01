@@ -1,5 +1,3 @@
-/* cute soft theme — pastels, rounded, cozy */
-
 :root {
   --cream: #fff8fb;
   --pink: #ffb8d9;
@@ -170,7 +168,6 @@ body {
   font-size: 0.95rem;
 }
 
-/* pink heart next to username for one special case (see app.js) */
 .foid-heart {
   margin-left: 0.25rem;
   font-size: 1.15em;

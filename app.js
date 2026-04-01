@@ -1,24 +1,16 @@
-// silly meme analyzer — not serious
-
-// edit only here — key = lowercase osu username (same as site)
-// string -> label only, % from formula · object -> { label, percent } (0–100, higher = more top)
 const MANUAL_OVERRIDES = {
-  // peppy: "vers top",
   acer: { label: "bottom", percent: 100 },
-  // must match osu username normalized (space not underscore)
   "chinese foid": { label: "100000% BOTTOM", percent: 100 },
-  // keys must match normName() from api (lowercase osu username)
   jeon: { label: "bottom", percent: 67 },
   "ethan jeon": { label: "bottom", percent: 67 },
   sigge: { label: "top", percent: 67 },
   arkyter: { label: "bottom", percent: 420 },
   "stupid dog": { label: "bottom", percent: 420 },
+  Nuz: { label: "bottom", percent: 67 },
 };
 
-// easter egg: heart only — full verdict text is in the title (no second % line)
 const FOID_USERNAME = "chinese foid";
 
-// set in index.html as window.API_BASE (cloud run url, no trailing slash)
 const API_BASE =
   typeof window !== "undefined" && typeof window.API_BASE === "string" ? window.API_BASE.trim() : "";
 
@@ -32,7 +24,6 @@ function titleCaseLabel(s) {
   return s.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-// turns a MANUAL_OVERRIDES value into label + percent; missing percent uses formula score
 function normalizeOverrideEntry(entry, formulaScore) {
   const fallback = Math.max(0, Math.min(100, Math.round(Number(formulaScore) || 0)));
   if (entry == null) return null;
@@ -45,7 +36,7 @@ function normalizeOverrideEntry(entry, formulaScore) {
     if (p === "" || p == null || Number.isNaN(Number(p))) {
       p = fallback;
     } else {
-      p = Math.max(0, Math.min(100, Math.round(Number(p))));
+      p = Math.max(0, Math.round(Number(p)));
     }
     return { label: label, percent: p };
   }
@@ -53,7 +44,6 @@ function normalizeOverrideEntry(entry, formulaScore) {
 }
 
 function pickRawOverride(key) {
-  // always compare lowercase — api gives canonical username, object keys are case-sensitive
   const k = normName(key);
   if (Object.prototype.hasOwnProperty.call(MANUAL_OVERRIDES, k)) {
     return MANUAL_OVERRIDES[k];
@@ -61,7 +51,6 @@ function pickRawOverride(key) {
   return null;
 }
 
-// hidden is HD in our mod string (server normalizes legacy + v2)
 function playHasHD(mods) {
   const m = String(mods || "").toUpperCase();
   return m.indexOf("HD") !== -1;
@@ -72,12 +61,10 @@ function playHasHR(mods) {
   return m.indexOf("HR") !== -1;
 }
 
-// true if no mods on that score (nm = nomod)
 function playIsNM(mods) {
   return !String(mods || "").trim();
 }
 
-// nm + hr style: has hr but not the usual "hidden stack" stuff (we use this as a top-leaning cue)
 function playIsNmHrStyle(mods) {
   const m = String(mods || "").toUpperCase();
   if (m.indexOf("HR") === -1) return false;
@@ -87,13 +74,11 @@ function playIsNmHrStyle(mods) {
 }
 
 // dont ask me on any of these thank cursor for doing all of this shit :sob:
-// hd stacked with speed mods — common "soft" pipeline joke
 function playIsHdStack(mods) {
   const m = String(mods || "").toUpperCase();
   return m.indexOf("HD") !== -1 && (m.indexOf("DT") !== -1 || m.indexOf("NC") !== -1 || m.indexOf("HR") !== -1);
 }
 
-// ratios on bests — used for archetype + two-phase scoring (no usernames)
 function computePlayShape(plays) {
   const list = plays || [];
   const n = list.length;
@@ -137,7 +122,6 @@ function computePlayShape(plays) {
   };
 }
 
-// 0–100: resembles soft/hd-heavy patterns (reference group style — not checking names)
 function computeBottomAffinity(u, shape) {
   let a = 0;
   const bio = (u.profile_text || "").toLowerCase();
@@ -149,7 +133,6 @@ function computeBottomAffinity(u, shape) {
   return Math.min(100, a);
 }
 
-// 0–100: resembles nm/hr lists + stats-bio tone (reference group style — not checking names)
 function computeTopAffinity(u, shape) {
   let a = 0;
   const bio = (u.profile_text || "").toLowerCase();
@@ -190,7 +173,6 @@ function scoreToVerdict(score, reasons) {
   return { title, label, score, reasons };
 }
 
-// old single-pass formula for people who dont match either archetype strongly
 function computeNeutralVerdict(payload) {
   const u = payload.user || {};
   let score = 50;
@@ -323,7 +305,6 @@ function computeNeutralVerdict(payload) {
   return scoreToVerdict(score, reasons);
 }
 
-// start very bottom, then let top plays pull a bit — hard cap so result stays bottom-y
 function computeBottomArchetypeVerdict(payload, bottomA, shape) {
   const reasons = [];
   let score = 7 + (bottomA / 100) * 15;
@@ -349,7 +330,6 @@ function computeBottomArchetypeVerdict(payload, bottomA, shape) {
   return scoreToVerdict(score, reasons);
 }
 
-// start very top, then let hd-heavy bests drag down a bit — floor so result stays top-y
 function computeTopArchetypeVerdict(payload, topA, shape) {
   const u = payload.user || {};
   const reasons = [];
@@ -375,7 +355,6 @@ function computeTopArchetypeVerdict(payload, topA, shape) {
   return scoreToVerdict(score, reasons);
 }
 
-// fake science: archetype match -> two-phase; else neutral blend
 function computeAutoVerdict(payload) {
   const u = payload.user || {};
   const shape = computePlayShape(payload.topPlays || []);
@@ -419,7 +398,6 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         data = JSON.parse(text);
       } catch (parseErr) {
-        // github pages returns html for /api/... if API_BASE is still blank
         if (!API_BASE) {
           throw new Error(
             "set window.API_BASE in index.html to your cloud run url (no trailing slash), then push — pages has no /api"
@@ -464,7 +442,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (isFoid) {
-        // one line only — no extra big % under it (was duplicating 10000% vs 100000%)
         title = "100000% BOTTOM";
       }
 
