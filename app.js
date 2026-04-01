@@ -12,7 +12,7 @@ const MANUAL_OVERRIDES = {
 // easter egg: heart only — full verdict text is in the title (no second % line)
 const FOID_USERNAME = "chinese foid";
 
-// github pages: put your cloud run / render backend url here (no trailing slash). "" = same server as this page.
+// github pages: MUST set this to your cloud run url (no trailing slash). if you leave "" the browser calls github pages for /api/... and you get html not json.
 const API_BASE = "";
 
 function normName(name) {
@@ -248,7 +248,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       const res = await fetch(API_BASE + "/api/analyze?username=" + encodeURIComponent(name));
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        // github pages returns html for /api/... if API_BASE is still blank
+        if (!API_BASE) {
+          throw new Error(
+            "set API_BASE in app.js to your cloud run url (no trailing slash), save, push — pages has no /api"
+          );
+        }
+        throw new Error("server did not return json — check backend url and cors");
+      }
       if (!res.ok) {
         if (res.status === 404) {
           throw new Error("user not found");
