@@ -6,8 +6,8 @@ const MANUAL_OVERRIDES = {
   sigge: { label: "top", percent: 67 },
   arkyter: { label: "definitely a top", percent: 420 },
   "stupid dog": { label: "bottom", percent: 420 },
-  Nuzz: { label: "bottom", percent: 67 },
-  Hydrole: { label: "bottom", percent: 100 },
+  nuzz: { label: "bottom", percent: 67 },
+  hydrole: { label: "bottom", percent: 100 },
 };
 
 const FOID_USERNAME = "chinese foid";
