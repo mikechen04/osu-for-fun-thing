@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const { buildVerdictDisplay } = require("./verdict");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -237,7 +238,8 @@ app.get("/api/analyze", async (req, res) => {
       });
     }
 
-    res.json(payload);
+    const verdict = buildVerdictDisplay(payload);
+    res.json({ ...payload, verdict });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: e.message || "server error" });
@@ -247,11 +249,11 @@ app.get("/api/analyze", async (req, res) => {
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
-app.get("/app.js", (req, res) => {
-  res.sendFile(path.join(__dirname, "app.js"));
+app.get("/x7k2m9p4q8.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "x7k2m9p4q8.js"));
 });
-app.get("/styles.css", (req, res) => {
-  res.sendFile(path.join(__dirname, "styles.css"));
+app.get("/n3w8r5y1t6.css", (req, res) => {
+  res.sendFile(path.join(__dirname, "n3w8r5y1t6.css"));
 });
 
 app.listen(PORT, () => {

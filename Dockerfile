@@ -1,4 +1,3 @@
-# cloud run — node backend (frontend static files at repo root)
 FROM node:20-alpine
 
 WORKDIR /app
@@ -11,4 +10,4 @@ COPY . .
 ENV NODE_ENV=production
 EXPOSE 8080
 
-CMD ["node", "server.js"]
+CMD ["node", "s4z9k2m7x1.js"]
