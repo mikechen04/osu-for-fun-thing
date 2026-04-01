@@ -65,6 +65,31 @@ function playHasHR(mods) {
   return m.indexOf("HR") !== -1;
 }
 
+function playHasDT(mods) {
+  const m = String(mods || "").toUpperCase();
+  return m.indexOf("DT") !== -1 || m.indexOf("NC") !== -1;
+}
+
+// true if no mods on that score (nm = nomod)
+function playIsNM(mods) {
+  return !String(mods || "").trim();
+}
+
+// nm + hr style: has hr but not the usual "hidden stack" stuff (we use this as a top-leaning cue)
+function playIsNmHrStyle(mods) {
+  const m = String(mods || "").toUpperCase();
+  if (m.indexOf("HR") === -1) return false;
+  if (m.indexOf("HD") !== -1) return false;
+  if (m.indexOf("DT") !== -1 || m.indexOf("NC") !== -1) return false;
+  return true;
+}
+
+// hd stacked with speed mods — common "soft" pipeline joke
+function playIsHdStack(mods) {
+  const m = String(mods || "").toUpperCase();
+  return m.indexOf("HD") !== -1 && (m.indexOf("DT") !== -1 || m.indexOf("NC") !== -1 || m.indexOf("HR") !== -1);
+}
+
 // super rough "how they type" — hearts/cute vs plain/bro (joke logic only)
 function bioTypingVibe(bioRaw) {
   const bio = bioRaw || "";
@@ -85,9 +110,23 @@ function bioTypingVibe(bioRaw) {
     reasons.push("bio reads cute / soft typing");
   }
 
+  // extra "aesthetic paragraph" vibes (no names — just resemblance to soft bios)
+  if (
+    /\b(bestie|slay|girlie|babe|baby|mommy|daddy|pookie|skull|literally me|main character)\b/i.test(lower)
+  ) {
+    delta -= 10;
+    reasons.push("bio has chronically online soft-aesthetic wording");
+  }
+
   if (/\b(bro|dude|sigma|grind|no cap|npc)\b/i.test(lower)) {
     delta += 10;
     reasons.push("bio has more blunt / bro-y wording");
+  }
+
+  // stats / roster / comp language — more top-leaning tone
+  if (/\b(acc|pp|rank|global|country|tournament|seed|pool|aim|flow)\b/i.test(lower)) {
+    delta += 8;
+    reasons.push("bio mentions stats / comp / skill stuff");
   }
 
   // short plain bio with no cute markers -> slight top tilt
@@ -96,10 +135,17 @@ function bioTypingVibe(bioRaw) {
     reasons.push("short plain bio — normal top-ish energy");
   }
 
+  // long bio + lots of cute markers = more bottom-leaning
+  if (lower.length > 180 && (heartish.test(bio) || /(uwu|owo|\^\^)/i.test(lower))) {
+    delta -= 8;
+    reasons.push("long bio + cute markers — very storybook energy");
+  }
+
   return { delta, reasons };
 }
 
-// fake science: stats + bio typing + HD/HR on bests
+// fake science: stats + bio typing + mod "shape" on bests
+// we dont check specific usernames — we only compare patterns (hd stacks vs nm/hr spreads, bio tone, etc.)
 function computeAutoVerdict(payload) {
   const u = payload.user || {};
   let score = 50;
@@ -155,14 +201,24 @@ function computeAutoVerdict(payload) {
   if (n > 0) {
     let hdCount = 0;
     let hrCount = 0;
+    let nmCount = 0;
+    let nmHrCount = 0;
+    let hdStackCount = 0;
     for (let i = 0; i < n; i++) {
       const mods = plays[i].mods;
       if (playHasHD(mods)) hdCount++;
       if (playHasHR(mods)) hrCount++;
+      if (playIsNM(mods)) nmCount++;
+      if (playIsNmHrStyle(mods)) nmHrCount++;
+      if (playIsHdStack(mods)) hdStackCount++;
     }
 
     const hdRatio = hdCount / n;
-    // lots of hidden (alone or stacked with dt/hr/etc) -> bottom energy
+    const nmRatio = nmCount / n;
+    const nmHrRatio = nmHrCount / n;
+    const hdStackRatio = hdStackCount / n;
+
+    // bottom-leaning: lots of hidden (alone or stacked) — resembles "soft" mod profiles
     if (hdRatio >= 0.6) {
       score -= 24;
       reasons.push("most top plays use HD — bottom pipeline");
@@ -171,8 +227,30 @@ function computeAutoVerdict(payload) {
       reasons.push("a bunch of HD bests — bottom-leaning");
     }
 
+    if (hdStackRatio >= 0.35) {
+      score -= 12;
+      reasons.push("HD stacked with DT/HR on bests — hidden dependency vibes");
+    }
+
+    // top-leaning: lots of true nomod scores (nm) — resembles nm-heavy top lists
+    if (nmRatio >= 0.5) {
+      score += 14;
+      reasons.push("a lot of NM bests — raw aim / no-cherry-pick energy");
+    } else if (nmRatio >= 0.3) {
+      score += 8;
+      reasons.push("solid NM presence in bests — top-leaning");
+    }
+
+    // top-leaning: hr without the hd+dt soup (nm/hr style)
+    if (nmHrRatio >= 0.35) {
+      score += 16;
+      reasons.push("HR bests without HD/DT soup — classic top-leaning mod spread");
+    } else if (nmHrRatio >= 0.2) {
+      score += 9;
+      reasons.push("some HR (non-hidden stack) bests — top-leaning");
+    }
+
     const hrRatio = hrCount / n;
-    // HR shows up -> more top likely (even if paired with HD)
     if (hrCount >= 1) {
       score += 8;
       reasons.push("HR shows up on bests — top boost");
@@ -180,6 +258,12 @@ function computeAutoVerdict(payload) {
     if (hrRatio >= 0.5 || hrCount >= 5) {
       score += 10;
       reasons.push("HR all over the place — extra top boost");
+    }
+
+    // if hd is rare but hr is common, push top more (cleaner split than hd farm)
+    if (hdRatio < 0.25 && hrRatio >= 0.35) {
+      score += 10;
+      reasons.push("HR-heavy without HD wall — looks like a top-leaning mod profile");
     }
 
     let modStr = "";
