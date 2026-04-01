@@ -93,60 +93,6 @@ function playIsHdStack(mods) {
   return m.indexOf("HD") !== -1 && (m.indexOf("DT") !== -1 || m.indexOf("NC") !== -1 || m.indexOf("HR") !== -1);
 }
 
-// super rough "how they type" — hearts/cute vs plain/bro (joke logic only)
-function bioTypingVibe(bioRaw) {
-  const bio = bioRaw || "";
-  const lower = bio.toLowerCase();
-  let delta = 0; // positive = more top, negative = more bottom
-  const reasons = [];
-
-  // hearts / cute unicode (common emoji + symbols)
-  const heartish =
-    /[\u2764\u2665\u2763\u2661]|\ud83d[\udc95\udc99\udc9a\udc9b\udc9c\udc9d\udc96\udc97\udf0d]|\ud83e[\ude77\ude75]/u;
-  if (heartish.test(bio)) {
-    delta -= 16;
-    reasons.push("bio has heart-y / sparkly unicode");
-  }
-
-  if (/uwu|owo|\^\^|nya|rawr|:3|;\)/i.test(lower) || (bio.match(/~/g) || []).length >= 3) {
-    delta -= 12;
-    reasons.push("bio reads cute / soft typing");
-  }
-
-  // extra "aesthetic paragraph" vibes (no names — just resemblance to soft bios)
-  if (
-    /\b(bestie|slay|girlie|babe|baby|mommy|daddy|pookie|skull|literally me|main character)\b/i.test(lower)
-  ) {
-    delta -= 10;
-    reasons.push("bio has chronically online soft-aesthetic wording");
-  }
-
-  if (/\b(bro|dude|sigma|grind|no cap|npc)\b/i.test(lower)) {
-    delta += 10;
-    reasons.push("bio has more blunt / bro-y wording");
-  }
-
-  // stats / roster / comp language — more top-leaning tone
-  if (/\b(acc|pp|rank|global|country|tournament|seed|pool|aim|flow)\b/i.test(lower)) {
-    delta += 8;
-    reasons.push("bio mentions stats / comp / skill stuff");
-  }
-
-  // short plain bio with no cute markers -> slight top tilt
-  if (lower.length > 0 && lower.length < 55 && !heartish.test(bio) && !/[!?]{3,}/.test(bio)) {
-    delta += 6;
-    reasons.push("short plain bio — normal top-ish energy");
-  }
-
-  // long bio + lots of cute markers = more bottom-leaning
-  if (lower.length > 180 && (heartish.test(bio) || /(uwu|owo|\^\^)/i.test(lower))) {
-    delta -= 8;
-    reasons.push("long bio + cute markers — very storybook energy");
-  }
-
-  return { delta, reasons };
-}
-
 // ratios on bests — used for archetype + two-phase scoring (no usernames)
 function computePlayShape(plays) {
   const list = plays || [];
@@ -191,25 +137,22 @@ function computePlayShape(plays) {
   };
 }
 
-// 0–100: resembles soft/hd-heavy / cute-bio patterns (reference group style — not checking names)
-function computeBottomAffinity(u, shape, typing) {
+// 0–100: resembles soft/hd-heavy patterns (reference group style — not checking names)
+function computeBottomAffinity(u, shape) {
   let a = 0;
   const bio = (u.profile_text || "").toLowerCase();
-  a += Math.min(36, Math.max(0, -typing.delta) * 1.55);
   if (bio.indexOf("bottom") >= 0 || bio.indexOf("sub") >= 0) a += 22;
   a += shape.hdRatio * 40;
   a += shape.hdStackRatio * 34;
   a += (1 - shape.nmRatio) * 18;
   if (u.pp != null && u.pp < 900) a += 9;
-  if (bio.length > 200 && /(heart|uwu|owo|\^\^)/i.test(bio)) a += 11;
   return Math.min(100, a);
 }
 
 // 0–100: resembles nm/hr lists + stats-bio tone (reference group style — not checking names)
-function computeTopAffinity(u, shape, typing) {
+function computeTopAffinity(u, shape) {
   let a = 0;
   const bio = (u.profile_text || "").toLowerCase();
-  a += Math.min(30, Math.max(0, typing.delta) * 1.45);
   if (/\b(acc|pp|rank|global|country|tournament|seed|pool|aim|flow)\b/i.test(bio)) a += 12;
   a += shape.nmRatio * 38;
   a += shape.nmHrRatio * 34;
@@ -290,12 +233,6 @@ function computeNeutralVerdict(payload) {
   if (bioLower.includes("switch") || bioLower.includes("vers")) {
     reasons.push("bio mentions switch/vers — chaotic neutral");
     score = Math.round(score * 0.85 + 25);
-  }
-
-  const typing = bioTypingVibe(u.profile_text || "");
-  score += typing.delta;
-  for (let i = 0; i < typing.reasons.length; i++) {
-    reasons.push(typing.reasons[i]);
   }
 
   const plays = payload.topPlays || [];
@@ -387,15 +324,12 @@ function computeNeutralVerdict(payload) {
 }
 
 // start very bottom, then let top plays pull a bit — hard cap so result stays bottom-y
-function computeBottomArchetypeVerdict(payload, bottomA, shape, typing) {
+function computeBottomArchetypeVerdict(payload, bottomA, shape) {
   const reasons = [];
   let score = 7 + (bottomA / 100) * 15;
   reasons.push(
     "phase 1: very bottom-leaning base (cute/hd-heavy vibe cluster — not checking usernames)"
   );
-  for (let i = 0; i < typing.reasons.length; i++) {
-    reasons.push(typing.reasons[i]);
-  }
 
   let pull =
     shape.nmRatio * 20 +
@@ -416,16 +350,13 @@ function computeBottomArchetypeVerdict(payload, bottomA, shape, typing) {
 }
 
 // start very top, then let hd-heavy bests drag down a bit — floor so result stays top-y
-function computeTopArchetypeVerdict(payload, topA, shape, typing) {
+function computeTopArchetypeVerdict(payload, topA, shape) {
   const u = payload.user || {};
   const reasons = [];
   let score = 73 + (topA / 100) * 13;
   reasons.push(
     "phase 1: very top-leaning base (nm/hr + stats-bio vibe cluster — not checking usernames)"
   );
-  for (let i = 0; i < typing.reasons.length; i++) {
-    reasons.push(typing.reasons[i]);
-  }
 
   let drag =
     shape.hdRatio * 16 +
@@ -447,17 +378,16 @@ function computeTopArchetypeVerdict(payload, topA, shape, typing) {
 // fake science: archetype match -> two-phase; else neutral blend
 function computeAutoVerdict(payload) {
   const u = payload.user || {};
-  const typing = bioTypingVibe(u.profile_text || "");
   const shape = computePlayShape(payload.topPlays || []);
 
-  const bottomA = computeBottomAffinity(u, shape, typing);
-  const topA = computeTopAffinity(u, shape, typing);
+  const bottomA = computeBottomAffinity(u, shape);
+  const topA = computeTopAffinity(u, shape);
 
   if (bottomA >= 47 && bottomA >= topA + 10) {
-    return computeBottomArchetypeVerdict(payload, bottomA, shape, typing);
+    return computeBottomArchetypeVerdict(payload, bottomA, shape);
   }
   if (topA >= 47 && topA >= bottomA + 10) {
-    return computeTopArchetypeVerdict(payload, topA, shape, typing);
+    return computeTopArchetypeVerdict(payload, topA, shape);
   }
 
   return computeNeutralVerdict(payload);
