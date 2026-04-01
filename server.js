@@ -7,7 +7,14 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// must allow browser origins (github pages / your domain). cloud run also needs "allow unauthenticated invocations" or the 403 has no cors headers and fetch shows NetworkError
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "HEAD", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // cache oauth token for v2
 let tokenCache = { access_token: null, expires_at: 0 };

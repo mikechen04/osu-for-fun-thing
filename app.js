@@ -7,6 +7,7 @@ const MANUAL_OVERRIDES = {
   acer: { label: "bottom", percent: 100 },
   // must match osu username normalized (space not underscore)
   "chinese foid": { label: "100000% BOTTOM", percent: 100 },
+  "Jeon": { label: "bottom", percent: 67 },
 };
 
 // easter egg: heart only — full verdict text is in the title (no second % line)
@@ -331,7 +332,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!isFoid) {
           line += " (" + percentShown + "%)";
         }
-        navigator.clipboard.writeText(line + "\n(auto / joke)");
+        navigator.clipboard.writeText(line);
       };
     } catch (ex) {
       err.textContent = ex.message || "something broke";
