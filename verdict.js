@@ -4,7 +4,7 @@ const MANUAL_OVERRIDES = {
   jeon: { label: "bottom", percent: 67 },
   "ethan jeon": { label: "bottom", percent: 67 },
   sigge: { label: "top", percent: 67 },
-  arkyter: { label: "bottom", percent: 420 },
+  arkyter: { label: "definitely a top", percent: 420 },
   "stupid dog": { label: "bottom", percent: 420 },
   Nuzz: { label: "bottom", percent: 67 },
 };
