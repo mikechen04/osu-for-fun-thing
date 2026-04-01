@@ -86,6 +86,7 @@ function playIsNmHrStyle(mods) {
   return true;
 }
 
+// dont ask me on any of these thank cursor for doing all of this shit :sob:
 // hd stacked with speed mods — common "soft" pipeline joke
 function playIsHdStack(mods) {
   const m = String(mods || "").toUpperCase();
