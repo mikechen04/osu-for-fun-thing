@@ -9,6 +9,7 @@ const MANUAL_OVERRIDES = {
   nuzz: { label: "bottom", percent: 67 },
   hydrole: { label: "bottom", percent: 100 },
   8581210: { label: "sweet 16", percent: 100 },
+  utami: { label: "i cum too fast >~<", percent: 100 },
 };
 
 const FOID_USERNAME = "chinese foid";
