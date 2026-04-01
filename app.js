@@ -8,6 +8,8 @@ const MANUAL_OVERRIDES = {
   // must match osu username normalized (space not underscore)
   "chinese foid": { label: "100000% BOTTOM", percent: 100 },
   "Jeon": { label: "bottom", percent: 67 },
+  "Ethan Jeon": { label: "bottom", percent: 67 },
+  "Sigge": { label: "top", percent: 67 },
 };
 
 // easter egg: heart only — full verdict text is in the title (no second % line)
