@@ -12,8 +12,9 @@ const MANUAL_OVERRIDES = {
 // easter egg: heart only — full verdict text is in the title (no second % line)
 const FOID_USERNAME = "chinese foid";
 
-// github pages: MUST set this to your cloud run url (no trailing slash). if you leave "" the browser calls github pages for /api/... and you get html not json.
-const API_BASE = "";
+// set in index.html as window.API_BASE (cloud run url, no trailing slash)
+const API_BASE =
+  typeof window !== "undefined" && typeof window.API_BASE === "string" ? window.API_BASE.trim() : "";
 
 function normName(name) {
   return String(name || "")
@@ -256,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // github pages returns html for /api/... if API_BASE is still blank
         if (!API_BASE) {
           throw new Error(
-            "set API_BASE in app.js to your cloud run url (no trailing slash), save, push — pages has no /api"
+            "set window.API_BASE in index.html to your cloud run url (no trailing slash), then push — pages has no /api"
           );
         }
         throw new Error("server did not return json — check backend url and cors");
