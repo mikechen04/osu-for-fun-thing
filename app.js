@@ -11,6 +11,7 @@ const MANUAL_OVERRIDES = {
   jeon: { label: "bottom", percent: 67 },
   "ethan jeon": { label: "bottom", percent: 67 },
   sigge: { label: "top", percent: 67 },
+  arkyter: { label: "bottom", percent: 420 },
 };
 
 // easter egg: heart only — full verdict text is in the title (no second % line)
