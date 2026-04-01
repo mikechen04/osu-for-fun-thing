@@ -8,6 +8,7 @@ const MANUAL_OVERRIDES = {
   "stupid dog": { label: "bottom", percent: 420 },
   nuzz: { label: "bottom", percent: 67 },
   hydrole: { label: "bottom", percent: 100 },
+  "8581210": { label: "sweet 16", percent: 100 },
 };
 
 const FOID_USERNAME = "chinese foid";
