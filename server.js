@@ -8,7 +8,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.static(path.join(__dirname, "public")));
 
 // cache oauth token for v2
 let tokenCache = { access_token: null, expires_at: 0 };
@@ -250,6 +249,17 @@ app.get("/api/analyze", async (req, res) => {
     console.error(e);
     res.status(500).json({ error: e.message || "server error" });
   }
+});
+
+// frontend files live at repo root so github pages can serve the same paths (not under /public)
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+app.get("/app.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "app.js"));
+});
+app.get("/styles.css", (req, res) => {
+  res.sendFile(path.join(__dirname, "styles.css"));
 });
 
 app.listen(PORT, () => {

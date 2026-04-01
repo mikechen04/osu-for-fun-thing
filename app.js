@@ -12,6 +12,9 @@ const MANUAL_OVERRIDES = {
 // easter egg: heart only — full verdict text is in the title (no second % line)
 const FOID_USERNAME = "chinese foid";
 
+// github pages: put your cloud run / render backend url here (no trailing slash). "" = same server as this page.
+const API_BASE = "";
+
 function normName(name) {
   return String(name || "")
     .trim()
@@ -244,10 +247,21 @@ document.addEventListener("DOMContentLoaded", function () {
     err.hidden = true;
 
     try {
-      const res = await fetch("/api/analyze?username=" + encodeURIComponent(name));
+      const res = await fetch(API_BASE + "/api/analyze?username=" + encodeURIComponent(name));
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "request failed");
+        if (res.status === 404) {
+          throw new Error("user not found");
+        }
+        const rawMsg = String((data && data.error) || "");
+        const msg = rawMsg.toLowerCase();
+        if (msg.indexOf("not found") !== -1 && (msg.indexOf("user") !== -1 || msg.indexOf("username") !== -1)) {
+          throw new Error("user not found");
+        }
+        if (msg.indexOf("server missing osu credentials") !== -1) {
+          throw new Error("user not found");
+        }
+        throw new Error(rawMsg || "request failed");
       }
 
       const canonical = data.user && data.user.username ? data.user.username : name;
