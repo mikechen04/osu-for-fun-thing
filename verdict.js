@@ -12,6 +12,7 @@ const MANUAL_OVERRIDES = {
   utami: { label: "i cum too fast >~<", percent: 100 },
   kimchisshi: { label: "diddy", percent: 6767 },
   eriko: { label: "🚫 👕 bottom", percent: 100 },
+  "hidden on osu": { label: "bottom", percent: 67 },
 };
 
 function normName(name) {
