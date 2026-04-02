@@ -25,6 +25,7 @@ function titleCaseLabel(s) {
 }
 
 function normalizeOverrideEntry(entry, formulaScore) {
+  // fallback only when override doesnt set a percent — stays 0–100 for formula score
   const fallback = Math.max(0, Math.min(100, Math.round(Number(formulaScore) || 0)));
   if (entry == null) return null;
   if (typeof entry === "string") {
@@ -36,7 +37,9 @@ function normalizeOverrideEntry(entry, formulaScore) {
     if (p === "" || p == null || Number.isNaN(Number(p))) {
       p = fallback;
     } else {
-      p = Math.max(0, Math.round(Number(p)));
+      // manual percent: exact number, can be above 100 (no cap)
+      p = Math.round(Number(p));
+      if (p < 0) p = 0;
     }
     return { label: label, percent: p };
   }
@@ -145,7 +148,7 @@ function computeTopAffinity(u, shape) {
   return Math.min(100, a);
 }
 
-function scoreToVerdict(score, reasons) {
+function scoreToVerdict(score) {
   score = Math.max(0, Math.min(100, score));
   let label = "switch";
   let title = "certified switch";
@@ -166,16 +169,15 @@ function scoreToVerdict(score, reasons) {
     title = "bottom";
   }
   if (score > 32 && score < 68) {
-    title = "switch / it depends";
+    title = "switch";
     label = "switch";
   }
-  return { title, label, score, reasons };
+  return { title, label, score };
 }
 
 function computeNeutralVerdict(payload) {
   const u = payload.user || {};
   let score = 50;
-  const reasons = [];
 
   const pp = u.pp;
   const acc = u.accuracy;
@@ -183,36 +185,28 @@ function computeNeutralVerdict(payload) {
 
   if (pp != null && pp >= 5000) {
     score += 14;
-    reasons.push("high pp — main character energy");
   } else if (pp != null && pp < 800) {
     score -= 10;
-    reasons.push("cozy pp — soft era");
   }
 
   if (acc != null && acc >= 98.5) {
     score += 10;
-    reasons.push("scary accuracy — control freak vibes");
   } else if (acc != null && acc < 90) {
     score -= 8;
-    reasons.push("messy acc — chill goblin vibes");
   }
 
   if (pc != null && pc > 20000) {
     score += 6;
-    reasons.push("tons of playcount — touches grass never");
   }
 
   const bioLower = (u.profile_text || "").toLowerCase();
   if (bioLower.includes("bottom") || bioLower.includes("sub")) {
     score -= 18;
-    reasons.push("bio said the thing (or something close)");
   }
   if (bioLower.includes("top") || bioLower.includes("dom")) {
     score += 14;
-    reasons.push("bio has big top keywords");
   }
   if (bioLower.includes("switch") || bioLower.includes("vers")) {
-    reasons.push("bio mentions switch/vers — chaotic neutral");
     score = Math.round(score * 0.85 + 25);
   }
 
@@ -240,46 +234,36 @@ function computeNeutralVerdict(payload) {
 
     if (hdRatio >= 0.6) {
       score -= 24;
-      reasons.push("most top plays use HD — bottom pipeline");
     } else if (hdRatio >= 0.4) {
       score -= 14;
-      reasons.push("a bunch of HD bests — bottom-leaning");
     }
 
     if (hdStackRatio >= 0.35) {
       score -= 12;
-      reasons.push("HD stacked with DT/HR on bests — hidden dependency vibes");
     }
 
     if (nmRatio >= 0.5) {
       score += 14;
-      reasons.push("a lot of NM bests — raw aim / no-cherry-pick energy");
     } else if (nmRatio >= 0.3) {
       score += 8;
-      reasons.push("solid NM presence in bests — top-leaning");
     }
 
     if (nmHrRatio >= 0.35) {
       score += 16;
-      reasons.push("HR bests without HD/DT soup — classic top-leaning mod spread");
     } else if (nmHrRatio >= 0.2) {
       score += 9;
-      reasons.push("some HR (non-hidden stack) bests — top-leaning");
     }
 
     const hrRatio = hrCount / n;
     if (hrCount >= 1) {
       score += 8;
-      reasons.push("HR shows up on bests — top boost");
     }
     if (hrRatio >= 0.5 || hrCount >= 5) {
       score += 10;
-      reasons.push("HR all over the place — extra top boost");
     }
 
     if (hdRatio < 0.25 && hrRatio >= 0.35) {
       score += 10;
-      reasons.push("HR-heavy without HD wall — looks like a top-leaning mod profile");
     }
 
     let modStr = "";
@@ -289,27 +273,21 @@ function computeNeutralVerdict(payload) {
     modStr = modStr.toUpperCase();
     if (modStr.indexOf("DT") !== -1 || modStr.indexOf("NC") !== -1) {
       score += 5;
-      reasons.push("dt/nc in bests — speed demon hours");
     }
     if (modStr.indexOf("EZ") !== -1) {
       score -= 6;
-      reasons.push("ez in bests — reverse chokehold aesthetic");
     }
   }
 
-  if (reasons.length === 0) {
-    reasons.push("no strong signals — we guessed from vibes");
-  }
+  // spread scores away from the middle so fewer people land on the same %
+  score = 50 + (score - 50) * 1.38;
 
-  return scoreToVerdict(score, reasons);
+  return scoreToVerdict(score);
 }
 
 function computeBottomArchetypeVerdict(payload, bottomA, shape) {
-  const reasons = [];
-  let score = 7 + (bottomA / 100) * 15;
-  reasons.push(
-    "phase 1: very bottom-leaning base (cute/hd-heavy vibe cluster — not checking usernames)"
-  );
+  // wider base range so bottom % isnt stuck around the same few numbers
+  let score = 2 + (bottomA / 100) * 28;
 
   let pull =
     shape.nmRatio * 20 +
@@ -318,24 +296,17 @@ function computeBottomArchetypeVerdict(payload, bottomA, shape) {
     shape.hdRatio * 10 -
     shape.hdStackRatio * 12;
   pull = Math.max(-10, Math.min(24, pull));
-  score += pull * 0.52;
-  reasons.push(
-    "phase 2: top plays adjust a little (nm/hr lifts, hd stacks dampen) — still capped low"
-  );
+  score += pull * 0.88;
 
-  score = Math.min(score, 29);
-  reasons.push("hard cap so you stay bottom / bottom-leaning only");
+  score = Math.min(score, 36);
 
-  return scoreToVerdict(score, reasons);
+  return scoreToVerdict(score);
 }
 
 function computeTopArchetypeVerdict(payload, topA, shape) {
   const u = payload.user || {};
-  const reasons = [];
-  let score = 73 + (topA / 100) * 13;
-  reasons.push(
-    "phase 1: very top-leaning base (nm/hr + stats-bio vibe cluster — not checking usernames)"
-  );
+  // was clustering ~86: base was too narrow (73–86); stretch + stronger drag
+  let score = 54 + (topA / 100) * 42;
 
   let drag =
     shape.hdRatio * 16 +
@@ -344,14 +315,12 @@ function computeTopArchetypeVerdict(payload, topA, shape) {
     shape.nmHrRatio * 9;
   if (shape.hasEz) drag += 5;
   drag = Math.max(-16, Math.min(18, drag));
-  score -= drag * 0.52;
-  reasons.push("phase 2: top plays can drag down if hd/ez stacks show up");
+  score -= drag * 0.95;
 
-  if (u.pp != null && u.pp < 1200) score -= 2;
-  score = Math.max(score, 69);
-  reasons.push("floor so you stay top-leaning+");
+  if (u.pp != null && u.pp < 1200) score -= 4;
+  score = Math.max(score, 52);
 
-  return scoreToVerdict(score, reasons);
+  return scoreToVerdict(score);
 }
 
 function computeAutoVerdict(payload) {
