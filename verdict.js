@@ -1,6 +1,6 @@
 const MANUAL_OVERRIDES = {
   acer: { label: "bottom", percent: 100 },
-  "chinese foid": { label: "100000% BOTTOM", percent: 100 },
+  "chinese foid": { label: "💜 bottom", percent: 676767 },
   jeon: { label: "bottom", percent: 67 },
   "ethan jeon": { label: "bottom", percent: 67 },
   sigge: { label: "top", percent: 67 },
@@ -13,8 +13,6 @@ const MANUAL_OVERRIDES = {
   kimchisshi: { label: "diddy", percent: 6767 },
   eriko: { label: "🚫 👕 bottom", percent: 100 },
 };
-
-const FOID_USERNAME = "chinese foid";
 
 function normName(name) {
   return String(name || "")
@@ -380,7 +378,6 @@ function buildVerdictDisplay(payload) {
   const v = computeAutoVerdict(payload);
   let title;
   let percentShown;
-  const isFoid = normName(canonical) === FOID_USERNAME;
 
   if (rawOv != null) {
     const fixed = normalizeOverrideEntry(rawOv, v.score);
@@ -391,15 +388,9 @@ function buildVerdictDisplay(payload) {
     percentShown = Math.round(v.score);
   }
 
-  if (isFoid) {
-    title = "100000% BOTTOM";
-  }
-
   return {
     title,
     percentShown,
-    isFoid,
-    hidePercent: isFoid,
   };
 }
 

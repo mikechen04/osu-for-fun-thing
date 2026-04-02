@@ -168,13 +168,6 @@ body {
   font-size: 0.95rem;
 }
 
-.foid-heart {
-  margin-left: 0.25rem;
-  font-size: 1.15em;
-  filter: saturate(1.2);
-  vertical-align: middle;
-}
-
 .verdict-title {
   margin: 0.5rem 0 0.35rem;
   font-size: clamp(1.6rem, 4vw, 2.1rem);

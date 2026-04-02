@@ -59,22 +59,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const title = vd.title;
       const percentShown = vd.percentShown;
-      const isFoid = !!vd.isFoid;
-      const hidePercent = !!vd.hidePercent;
-
-      const heartEl = document.getElementById("foid-heart");
-      if (heartEl) {
-        heartEl.hidden = !isFoid;
-      }
 
       const pctEl = document.getElementById("verdict-percent");
-      if (hidePercent) {
-        if (pctEl) pctEl.hidden = true;
-      } else {
-        if (pctEl) {
-          pctEl.hidden = false;
-          pctEl.textContent = String(percentShown) + "%";
-        }
+      if (pctEl) {
+        pctEl.hidden = false;
+        pctEl.textContent = String(percentShown) + "%";
       }
 
       document.getElementById("verdict-title").textContent = title;
@@ -85,10 +74,8 @@ document.addEventListener("DOMContentLoaded", function () {
       prof.href = "https://osu.ppy.sh/users/" + encodeURIComponent(canonical);
 
       document.getElementById("copy-btn").onclick = function () {
-        let line = "osu! top/bottom verdict for " + canonical + ": " + title;
-        if (!hidePercent) {
-          line += " (" + percentShown + "%)";
-        }
+        const line =
+          "osu! top/bottom verdict for " + canonical + ": " + title + " (" + percentShown + "%)";
         navigator.clipboard.writeText(line);
       };
     } catch (ex) {
