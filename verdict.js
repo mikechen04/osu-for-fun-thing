@@ -13,6 +13,7 @@ const MANUAL_OVERRIDES = {
   kimchisshi: { label: "diddy", percent: 6767 },
   eriko: { label: "🚫 👕 bottom", percent: 100 },
   "hidden on osu": { label: "bottom", percent: 67 },
+  "soft bunny": { label: "bnuy (bottom)", percent: 6767 },
 };
 
 function normName(name) {
