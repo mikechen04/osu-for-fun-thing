@@ -91,7 +91,7 @@ async function fetchLegacyUser(username, apiKey) {
   const u = encodeURIComponent(username);
   const base = `https://osu.ppy.sh/api`;
   const userUrl = `${base}/get_user?k=${apiKey}&u=${u}&type=string`;
-  const bestUrl = `${base}/get_user_best?k=${apiKey}&u=${u}&type=string&limit=10&m=0`;
+  const bestUrl = `${base}/get_user_best?k=${apiKey}&u=${u}&type=string&limit=100&m=0`;
 
   const [userRes, bestRes] = await Promise.all([fetch(userUrl), fetch(bestUrl)]);
 
@@ -165,7 +165,7 @@ async function fetchV2User(username) {
     (u.page && u.page.html) ||
     "";
 
-  const scoresUrl = `https://osu.ppy.sh/api/v2/users/${id}/scores/best?mode=osu&limit=10`;
+  const scoresUrl = `https://osu.ppy.sh/api/v2/users/${id}/scores/best?mode=osu&limit=100`;
   const scoresRes = await fetch(scoresUrl, {
     headers: { Authorization: `Bearer ${token}` },
   });
